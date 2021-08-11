@@ -1,15 +1,19 @@
-use crate::models::{comment::Comment};
 use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
+use diesel::{Queryable, Insertable};
 
-type ImageUrl = String;
+use crate::schema::users;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Queryable, Insertable)]
 pub struct User {
-    pub id: String,
+    pub id: i32,
     pub username: String,
     pub password: String,
-    pub first_name: String,
-    pub last_name: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub email: String,
+    created_on: SystemTime,
+    last_login: Option<SystemTime>
     // pub avatar: ImageUrl,
     // pub comments: Vec<Comment>
 }

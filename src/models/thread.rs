@@ -1,12 +1,14 @@
-use crate::models::{user::User, comment::Comment};
+// use crate::models::{user::User, comment::Comment};
 use serde::{Deserialize, Serialize};
+use diesel::{Queryable, Insertable};
+use std::time::SystemTime;
 
-pub type Date = String;
+use crate::schema::threads;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable, Insertable)]
 pub struct Thread {
-    pub id: String,
-    pub author: User,
-    pub last_posted: Date,
-    pub comments: Vec<Comment>
+    pub id: i32,
+    pub title: String,
+    pub last_posted: SystemTime,
+    namespace_name: String
 }

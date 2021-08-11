@@ -1,7 +1,35 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder };
-use mongodb::{Client, options::ClientOptions, Database};
+use diesel::prelude::*;
+use diesel::pg::PgConnection;
+use diesel::r2d2::{self, ConnectionManager};
+use dotenv::dotenv;
+use std::env;
+
+#[macro_use]
+extern crate diesel;
+
 pub mod routes;
 pub mod models;
+pub mod schema;
+
+// use self::models::*;
+type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+
+pub fn create_db_pool() -> DbPool {
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    let pool = r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.");
+
+    pool
+    // PgConnection::establish(&database_url)
+    //     .expect(&format!("Error connecting to {}", database_url))
+}
 
 
 #[get("/")]
@@ -15,22 +43,23 @@ async fn echo(req_body: String) -> impl Responder {
 }
 
 struct AppState {
-    pub db: Database
+    pub connection: PgConnection
 }
+
 
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
-    client_options.app_name = Some("Namespaces".to_string());
-    let client = Client::with_options(client_options).unwrap();
-    let db = client.database("namespaces");
+    // std::env::set_var("RUST_LOG", "actix_web=info");
+
+    let pool = create_db_pool();
 
     HttpServer::new(move || {
         App::new()
-            .data(AppState {
-                db: db.clone()
-            })
+            // .data(AppState {
+            //     connection: connection
+            // })
+            .data(pool.clone())
             .service(hello)
             .service(routes::user::find_all)
     })

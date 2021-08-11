@@ -1,10 +1,11 @@
-use crate::models::{user::User, thread::Thread};
+// use crate::models::{user::User, thread::Thread};
 use serde::{Deserialize, Serialize};
+use diesel::{Queryable, Insertable};
 
-#[derive(Serialize, Deserialize)]
+use crate::schema::namespaces;
+
+#[derive(Serialize, Deserialize, Queryable, Insertable)]
 pub struct Namespace {
-    pub id: String,
-    pub owner: User,
-    pub members: Vec<User>,
-    pub threads: Vec<Thread>
+    pub name: String,
+    pub owner_id: i32
 }
